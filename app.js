@@ -16,9 +16,7 @@ app.use('/input', input);
 
 
 app.use((request, response, next) => {
-    const error = new Error('Server working');
-    error.status = 404;
-    next(error);
+    res.send("Server Working").status(404);
 })
 
 module.exports = app;
