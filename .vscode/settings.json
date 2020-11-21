@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/d5809e9f-f70e-45d5-aa93-d722124f818c/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/COVID19-DATA",
+    "appService.deploySubpath": "apis"
+}
