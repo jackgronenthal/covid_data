@@ -86,11 +86,12 @@ const convertDataToSpeech = ({ live, hist }) => {
     if(hist) hist_cases = hist.cases
     
     percent_change = Number(((() => 100 * (cases - hist_cases) / hist_cases )()).toFixed(1));
+    mag_change = (() => Math.abs(cases - hist_cases))();
     if(county) 
         return `The New York Times reports that ${county} county has had ${cases} cases of COVID-19.` 
     if(state)
-        return `The New York Times reports that the state of ${state} has had ${cases} cases of COVID-19. Within the last week, there has been ${percent_change >= 0 ? "an increase" : "a decrease"} of ${percent_change} percent.`
-    return `The New York Times reports that the United States has had ${cases} cases of COVID-19. Within the last week, there has been ${percent_change >= 0 ? "an increase" : "a decrease"} of ${percent_change} percent.`
+        return `The New York Times reports that the state of ${state} has had ${cases} cases of COVID-19. Within the last week, there has been ${percent_change >= 0 ? "an increase" : "a decrease"} of ${mag_change} cases, a change of ${percent_change} percent.`
+    return `The New York Times reports that the United States has had ${cases} cases of COVID-19. Within the last week, there has been ${percent_change >= 0 ? "an increase" : "a decrease"} of ${mag_change} cases, a change of ${percent_change} percent.`
 }
 
 const initialize_data = () => {
