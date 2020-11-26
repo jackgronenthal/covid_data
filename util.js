@@ -1,7 +1,7 @@
 const { format } = require("morgan")
 const cache = require('./cache');
 const NYT = require('./routes/nyt')
-const { COUNTRY_LABEL, STATE_LABEL , COUNTY_LABEL } = require('./constants');
+const { COUNTRY_LABEL, STATE_ADMIN_LEVEL: STATE_ADMIN_LEVEL , COUNTY_LABEL } = require('./constants');
 const { live } = require("./routes/nyt");
 const fs = require('fs');
 const CTP = require("./apis/covidtracking")
@@ -10,18 +10,18 @@ const HIST_PREF = "HIST_"
 
 const determineLocality = places => {
 
-    const formatter = (name, level, buffer = undefined) => ({ name, level, buffer })
+    const formatter = (locality, admin_level, buffer = undefined) => ({ locality, admin_level, buffer })
     let data = places.result.address_components;
     let county
     for(let i = 0; i < data.length; i++) {
         let { types } = data[i]
         
         if(types[0] === COUNTY_LABEL) county = data[i].long_name
-        if(types[0] === STATE_LABEL) {
+        if(types[0] === STATE_ADMIN_LEVEL) {
             if(county) {
                 return formatter(county, COUNTY_LABEL, data[i].long_name)
             } else {
-                return formatter(data[i].long_name, STATE_LABEL)
+                return formatter(data[i].long_name, STATE_ADMIN_LEVEL)
             }
         }
         if(types[0] === COUNTRY_LABEL) return formatter(data[i].long_name, COUNTRY_LABEL)
@@ -34,7 +34,7 @@ const refreshCovidData = async (level, name) => {
     let data_hist = cache.getVal(HIST_PREF + level + name)
     if(data && data_hist) { return { status: true, data: data.value, data_hist: data_hist.value }}
     data = await NYT.live(level)
-    if(level === STATE_LABEL) 
+    if(level === STATE_ADMIN_LEVEL) 
         data_hist = await CTP.hist(name)
     status = cache.setVal(level, data)
     status_hist = cache.setVal(HIST_PREF + level + name, data_hist)
@@ -54,7 +54,7 @@ const extractLocality = async (data, data_hist, name, level, buffer) => {
     switch(level) {
         case COUNTY_LABEL:
             key = "county"; break;
-        case STATE_LABEL:
+        case STATE_ADMIN_LEVEL:
             key = "state"; break;
         default:
             key = "country";
@@ -96,7 +96,7 @@ const convertDataToSpeech = ({ live, hist }) => {
 
 const initialize_data = () => {
     categories = [
-        COUNTY_LABEL, STATE_LABEL, COUNTRY_LABEL
+        COUNTY_LABEL, STATE_ADMIN_LEVEL, COUNTRY_LABEL
     ]
     categories_to_update = []
     for(let i = 0; i < categories.length; i++) {
@@ -106,9 +106,38 @@ const initialize_data = () => {
     }
 }
 
+/**
+ * 
+ * @param {String} locality: The name of the location (e.g. Illinois, Kane County, United States)
+ * @param {String} admin_level: The Google Maps administration level 
+ */
+const covidDataPipelineV2 = (locality, admin_level) => {
+    const isLocalityState = admin_level => admin_level === STATE_ADMIN_LEVEL
+    
+    if(isLocalityState(admin_level)) { return covidDataPipelineV2State(locality) }
+    return "NOT IMPLEMENTED YET"
+}
+
+const covidDataPipelineV2State = async locality => {
+    const fields = await CTP.fetchStateFields(locality).then(fields => fields).catch(err => err)
+    return orderToggledFields(fields)
+}
+
+// Removes Date and State from response; orders based off relevance for user to toggle
+const orderToggledFields = fields => {
+    const extractObjValue = obj => obj[Object.keys(obj)[0]]
+    const extractProperty = obj => Object.keys(obj)[0]
+
+    fields.sort((a, b) => extractObjValue(a) - extractObjValue(b))
+    for(let key of fields) { console.log(extractProperty(key)) }
+    return 
+}
+
 module.exports = {
     determineLocality,
     covidDataPipeline,
     convertDataToSpeech,
-    initialize_data
+    initialize_data,
+    covidDataPipelineV2,
+    covidDataPipelineV2State
 }

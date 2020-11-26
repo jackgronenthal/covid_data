@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const fetch = require('node-fetch');
 const neatCsv = require('neat-csv');
-const { COUNTRY_LABEL, STATE_LABEL, COUNTY_LABEL } = require('../constants');
+const { COUNTRY_LABEL, STATE_ADMIN_LEVEL: STATE_ADMIN_LEVEL, COUNTY_LABEL } = require('../constants');
 
 
 const NYT_URL_GEN = path => `https://raw.githubusercontent.com/nytimes/covid-19-data/master/live/us-${path}.csv`
@@ -20,7 +20,7 @@ const live = async level => {
     switch(level) {
         case COUNTY_LABEL:
             url = LIVE_COUNTIES; break;
-        case STATE_LABEL:
+        case STATE_ADMIN_LEVEL:
             url = LIVE_STATES; break;
         default:
             url = LIVE_US;
@@ -34,7 +34,7 @@ const hist = async level => {
     switch(level) {
         case COUNTY_LABEL:
             url = HIST_COUNTIES; break;
-        case STATE_LABEL:
+        case STATE_ADMIN_LEVEL:
             url = HIST_STATES; break;
         default:
             url = HIST_US;

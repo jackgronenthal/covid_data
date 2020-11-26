@@ -8,10 +8,12 @@ router.post('/location', async (req, res) => {
     try {
         let placeID = await GM.getPlaceID(location)
         let results = await GM.getPlaceDetails(placeID)
-        let locationData = util.determineLocality(results)
-        let data = await util.covidDataPipeline(locationData)
-        let output = util.convertDataToSpeech(data)
-        res.send(output).status(200);
+        const { locality, admin_level } = util.determineLocality(results)
+
+        // let data = await util.covidDataPipeline(locationData)
+        // let output = util.convertDataToSpeech(data)
+        let fields = await util.covidDataPipelineV2(locality, admin_level).then(fields => fields)
+        res.send(JSON.stringify({ fields })).status(200);
     } catch(err) {
         console.log(err)
         res.send("Could not find place").status(200);

@@ -15,7 +15,7 @@ app.use('/nyt', nyt.router);
 app.use('/input', input);
 
 
-app.use((request, response, next) => {
+app.use((request, res, next) => {
     res.send("Server Working").status(404);
 })
 

@@ -5,6 +5,9 @@ const gen_CTP_url = (state, date) => `https://api.covidtracking.com/v1/states/${
 const gen_CTP_COUNTRY_url = () => `https://api.covidtracking.com/v1/us/${one_week_ago()}.json`
 const WEEK = 604800000
 
+/** The state parameter should come in the form of a two-length long lower cased state abbreviation (e.g. il, ca, fl, ny) */
+const genCurCtpUrl = state => `https://api.covidtracking.com/v1/states/${state.length === 2 ? state : STATES[state].toLowerCase()}/current.json`
+
 const STATES = {
   'Alabama': 'AL',
   'Alaska': 'AK',
@@ -94,8 +97,29 @@ const hist_state = async state => {
     return { cases: results.positive, deaths: results.death }
 }
 
+const fetchStateFields = async state => {
+    const enabledFields = { 
+        'positive': 0, 
+        'totalTestResults': 5, 
+        'hospitalizedCurrently': 7, 
+        'inIcuCurrently': 8, 
+        'onVentilatorCurrently': 9, 
+        'death': 1, 
+        "positiveIncrease": 3, 
+        "totalTestResultsIncrease": 6,
+        "deathIncrease": 4
+    }
+    const st = STATES[state].toLowerCase()
+    const url = genCurCtpUrl(st)
+    const results = await fetch(url).then(res => res.json()).then(json => json)
+    let fields = []
+    for(const key in results) { if(results[key] !== undefined && key in enabledFields) fields = [...fields, { [key]: enabledFields[key] }] }
+    return fields
+} 
+
 module.exports = {
     hist: hist_state,
-    hist_country
+    hist_country,
+    fetchStateFields,
 }
 
