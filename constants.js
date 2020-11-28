@@ -17,7 +17,7 @@ const ENABLED_FIELDS = {
 }
 
 const prefix = state => `The COVID Tracking project reports that the state of ${state}`
-const determineDirection = ({ value, hist_value }) => value >= hist_value ? "an increase of" : "a decrease of"
+const determineDirection = ({ value, hist_value }) => value >= hist_value ? "an increase" : "a decrease"
 const determinePercentChange = ({ value, hist_value }) => Number((100 * Math.abs(value - hist_value) / value).toFixed(1))
 
 const ENABLED_FIELDS_RESPONSE = {

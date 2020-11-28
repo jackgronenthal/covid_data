@@ -222,7 +222,6 @@ const generateSpeech = (data, state) => {
     }
     const formatPromptData = d => ({state: d.state, value: d.value, hist_value: d.hist_value })
     const prompts = c.ENABLED_FIELDS_RESPONSE
-    console.log(data)
     //if(data.state === undefined) return "It seems like there was a problem with Siri. Until that is fixed, here is some general data: " + prompts["positive"](formatPromptData({state: STATES[state], value: data["positive"]}))
  
     //TODO We can only handle single fields at the moment
