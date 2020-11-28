@@ -28,6 +28,7 @@ router.post('/location', async (req, res) => {
 })
 
 // This function is a poor consequence of Short Cut's short comings
+// Able to accept multiple fields; however, at the moment, the client will only allow users to toggle one
 router.get('/fields', async (req, res) => {
     let decoded = decodeURI(req.url + ".")
     let data = decoded.split("?").slice(1)

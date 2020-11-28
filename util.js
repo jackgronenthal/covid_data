@@ -5,7 +5,8 @@ const { COUNTRY_LABEL, STATE_ADMIN_LEVEL: STATE_ADMIN_LEVEL , COUNTY_LABEL } = r
 const { live } = require("./routes/nyt");
 const fs = require('fs');
 const CTP = require("./apis/covidtracking")
-const c = require("./constants")
+const c = require("./constants");
+const { json } = require("express");
 
 const HIST_PREF = "HIST_"
 
@@ -144,14 +145,20 @@ const identifyFields = prompts => {
 }
 
 const fetchFilteredData = async (fields, state) => {
-    const results = await CTP.fetchStateData(state)
+    const results = await Promise.all([ CTP.fetchStateData(state), CTP.hist(state, fields) ])
+    .then(res => Promise.all(res.map(r => r.json())))
+    .then(json => json)
     let requestedData = {}
-    for(let f of fields) { requestedData = {...requestedData, [f]: results[f]} }
-    return {requestedData, state}
+    
+    for(let f of fields) { 
+        for(let day in results) {
+            requestedData = {...requestedData, [day]: { data: results[day][f], field: f } } 
+        }
+    }
+    return { requestedData, state }
 }
 
 const generateSpeech = (data, state) => {
-
     const STATES = {
         "AL": "Alabama",
         "AK": "Alaska",
@@ -213,11 +220,20 @@ const generateSpeech = (data, state) => {
         "WI": "Wisconsin",
         "WY": "Wyoming"
     }
-
-    let output = ""
-
-    output += `According to the Covid Tracking Project, the state of ${STATES[state]} is reporting the following:`
-    return output
+    const formatPromptData = d => ({state: d.state, value: d.value, hist_value: d.hist_value })
+    const prompts = c.ENABLED_FIELDS_RESPONSE
+    console.log(data)
+    if(data.state === undefined) return "It seems like there was a problem with Siri. Until that is fixed, here is some general data: " + prompts["positive"](formatPromptData({state: STATES[state], value: data["positive"]}))
+ 
+    //TODO We can only handle single fields at the moment
+    let key = data[0].field 
+    if(key) {
+        let prompt = prompts[key]
+        if(prompt) {
+            return prompts[key](formatPromptData({ state: STATES[state], value: data[0].data, hist_value: data[1].data }))
+        }
+    } 
+    return "It seems like there was a problem with Siri. Until that is fixed, here is some general data: " + prompts["positive"](formatPromptData({state: STATES[state], value: data["positive"]}))
 }
 
 module.exports = {

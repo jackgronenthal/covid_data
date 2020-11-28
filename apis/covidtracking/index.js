@@ -4,7 +4,7 @@ const c = require("../../constants")
 const url =  ""
 const gen_CTP_url = (state, date) => `https://api.covidtracking.com/v1/states/${state}/${date}.json`
 const gen_CTP_COUNTRY_url = () => `https://api.covidtracking.com/v1/us/${one_week_ago()}.json`
-const WEEK = 604800000
+const DAY = 604800000 / 7
 
 /** The state parameter should come in the form of a two-length long lower cased state abbreviation (e.g. il, ca, fl, ny) */
 const genCurCtpUrl = state => `https://api.covidtracking.com/v1/states/${state.length === 2 ? state : STATES[state].toLowerCase()}/current.json`
@@ -78,9 +78,9 @@ const hist_country = async () => {
     return { cases: results.positive, deaths: results.death }
 }
 
-const one_week_ago = () => {
+const n_days_ago = n => {
     let now = new Date()
-    let hist_date = now - WEEK
+    let hist_date = now - DAY * n
     let histDate = new Date(hist_date)
     let year = histDate.getFullYear()
     let month = String(histDate.getUTCMonth() + 1)
@@ -91,23 +91,26 @@ const one_week_ago = () => {
     return date
 }
 
-const hist_state = async state => {
-    let date = one_week_ago()
-    let url = gen_CTP_url(STATES[state], date)
-    let results =  await fetch(url).then(res => res.json()).then(res => res).catch(err => err)
-    return { cases: results.positive, deaths: results.death }
+const hist_state = async (state, fields = [])  => {
+    state = state.length == 2 ? state.toLowerCase() : STATES[state]
+    fields = fields.length === 1 ? fields : ["positive"]
+    let date = n_days_ago(7)
+    let url = gen_CTP_url(state, date)
+    return fetch(url)//.then(res => res.json())//.then(res => res).catch(err => err)
+    // return { cases: results.positive, deaths: results.death }
+    
 }
 
 const fetchStateData = async state => {
     const st = state.length === 2 ? state : STATES[state].toLowerCase()
     const url = genCurCtpUrl(st)
-    const results = await fetch(url).then(res => res.json()).then(json => json)
+    return fetch(url)//.then(res => res.json()).then(json => json)
     return results
 }
 
 const fetchStateFields = async state => {
     let enabledFields = c.ENABLED_FIELDS
-    let results = await fetchStateData(state)
+    let results = await fetchStateData(state).then(res => res.json()).then(json => json).catch(err => err)
     let fields = []
     for(const key in results) { if(results[key] !== undefined && key in enabledFields) fields = [...fields, { [key]: enabledFields[key] }] }
     return { fields, meta: { state: results.state }} 
