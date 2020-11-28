@@ -11,9 +11,9 @@ const ENABLED_FIELDS = {
     'inIcuCurrently': { order: 8, readableName: "Currently in ICU", description: "Amount of present ICU patients." }, 
     'onVentilatorCurrently': { order: 9, readableName: "Currently on Ventilator", description: "Amont of present patients on a ventilator." }, 
     'death': { order: 1, readableName: "Deaths", description: "Total amount of deaths." }, 
-    "positiveIncrease": { order: 3, readableName: "Change in Positive Tests", description: "Amount change from yesterday's positive tests." }, 
+    // "positiveIncrease": { order: 3, readableName: "Change in Positive Tests", description: "Amount change from yesterday's positive tests." }, 
     "totalTestResultsIncrease": { order: 6, readableName: "Change in Tests Performed", description: "Amount change from yesterday's performed tests." },
-    "deathIncrease": { order: 4, readableName: "Change in Deaths", description: "Amount change from yesterday's deaths." }
+    // "deathIncrease": { order: 4, readableName: "Change in Deaths", description: "Amount change from yesterday's deaths." }
 }
 
 const prefix = state => `The COVID Tracking project reports that the state of ${state}`
@@ -26,7 +26,8 @@ const ENABLED_FIELDS_RESPONSE = {
     'hospitalizedCurrently': data => `${prefix(data.state)} has ${data.value} COVID-19 patients currently hospitalized. One week ago ${data.state} had ${data.hist_value} hospitalized patients, representing ${determineDirection(data)} of ${determinePercentChange(data)} percent.`,
     'inIcuCurrently': data => `${prefix(data.state)} has ${data.value} COVID-19 patients currently in the ICU. One week ago ${data.state} had ${data.hist_value} ICU patients, representing ${determineDirection(data)} of ${determinePercentChange(data)} percent.`,
     'onVentilatorCurrently': data => `${prefix(data.state)} has ${data.value} COVID-19 patients currently on a ventilator. One week ago ${data.state} had ${data.hist_value} ventilated patients, representing ${determineDirection(data)} of ${determinePercentChange(data)} percent.`,
-    'death': data => `${prefix(data.state)} has accumulated ${data.value} deaths due to COVID-19. One week ago ${data.state} had accumulated ${data.hist_value} deaths, representing ${determineDirection(data)} of ${determinePercentChange(data)} percent.`
+    'death': data => `${prefix(data.state)} has accumulated ${data.value} deaths due to COVID-19. One week ago ${data.state} had accumulated ${data.hist_value} deaths, representing ${determineDirection(data)} of ${determinePercentChange(data)} percent.`,
+    'totalTestResultsIncrease': () => 'I luv u'
 }
 
 const STATES_BY_ABR = {
