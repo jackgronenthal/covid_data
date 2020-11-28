@@ -11,9 +11,9 @@ const ENABLED_FIELDS = {
     'inIcuCurrently': { order: 8, readableName: "Currently in ICU", description: "Amount of present ICU patients." }, 
     'onVentilatorCurrently': { order: 9, readableName: "Currently on Ventilator", description: "Amont of present patients on a ventilator." }, 
     'death': { order: 1, readableName: "Deaths", description: "Total amount of deaths." }, 
-    // "positiveIncrease": { order: 3, readableName: "Change in Positive Tests", description: "Amount change from yesterday's positive tests." }, 
-    // "totalTestResultsIncrease": { order: 6, readableName: "Change in Tests Performed", description: "Amount change from yesterday's performed tests." },
-    // "deathIncrease": { order: 4, readableName: "Change in Deaths", description: "Amount change from yesterday's deaths." }
+    "positiveIncrease": { order: 3, readableName: "Change in Positive Tests", description: "Amount change from yesterday's positive tests." }, 
+    "totalTestResultsIncrease": { order: 6, readableName: "Change in Tests Performed", description: "Amount change from yesterday's performed tests." },
+    "deathIncrease": { order: 4, readableName: "Change in Deaths", description: "Amount change from yesterday's deaths." }
 }
 
 const prefix = state => `The COVID Tracking project reports that the state of ${state}`
