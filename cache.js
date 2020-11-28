@@ -1,7 +1,14 @@
 const NodeCache = require('node-cache');
 const UPDATE_PERIOD = 86400
 
-const myCache = new NodeCache( { stdTTL: UPDATE_PERIOD, checkperiod: UPDATE_PERIOD + 20 } );
+const myCache = new NodeCache({ stdTTL: UPDATE_PERIOD, checkperiod: UPDATE_PERIOD + 20 });
+const queryCache = new NodeCache({ stdTTL: UPDATE_PERIOD, checkperiod: UPDATE_PERIOD + 20 });
+const dataCache = new NodeCache({ stdTTL: UPDATE_PERIOD, checkperiod: UPDATE_PERIOD + 20 });
+
+const setData = (key, value) => queryCache.set(key, {key, ...value});
+const getData = key => queryCache.get(key);
+const setQuery = (key, value) => queryCache.set(key, {key, ...value});
+const getQuery = key => queryCache.get(key);
 
 const getVal = key => {
     value = myCache.get(key);
@@ -15,5 +22,9 @@ const setVal = (key, value) => {
 
 module.exports = {
     getVal,
-    setVal
+    setVal,
+    getData,
+    setData,
+    setQuery,
+    getQuery
 }

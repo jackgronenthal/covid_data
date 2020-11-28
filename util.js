@@ -5,6 +5,7 @@ const { COUNTRY_LABEL, STATE_ADMIN_LEVEL: STATE_ADMIN_LEVEL , COUNTY_LABEL } = r
 const { live } = require("./routes/nyt");
 const fs = require('fs');
 const CTP = require("./apis/covidtracking")
+const c = require("./constants")
 
 const HIST_PREF = "HIST_"
 
@@ -120,17 +121,103 @@ const covidDataPipelineV2 = (locality, admin_level) => {
 
 const covidDataPipelineV2State = async locality => {
     const fields = await CTP.fetchStateFields(locality).then(fields => fields).catch(err => err)
-    return orderToggledFields(fields)
+    return { fields: orderToggledFields(fields.fields), state: fields.meta.state }
 }
 
 // Removes Date and State from response; orders based off relevance for user to toggle
 const orderToggledFields = fields => {
     const extractObjValue = obj => obj[Object.keys(obj)[0]]
-    const extractProperty = obj => Object.keys(obj)[0]
+    
+    let list = {}
+    for(let key of fields) { list = { [extractObjValue(key).readableName]: extractObjValue(key).description,  ...list } }
+    return list
+}
 
-    fields.sort((a, b) => extractObjValue(a) - extractObjValue(b))
-    for(let key of fields) { console.log(extractProperty(key)) }
-    return 
+const identifyFields = prompts => {
+    let fields = []
+    for(let p of prompts) {
+        for(let key of Object.keys(c.ENABLED_FIELDS)) {
+            if(c.ENABLED_FIELDS[key].description.includes(p)) { fields.push(key); continue }
+        }
+    }
+    return fields
+}
+
+const fetchFilteredData = async (fields, state) => {
+    const results = await CTP.fetchStateData(state)
+    let requestedData = {}
+    for(let f of fields) { requestedData = {...requestedData, [f]: results[f]} }
+    return {requestedData, state}
+}
+
+const generateSpeech = (data, state) => {
+
+    const STATES = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District Of Columbia",
+        "FM": "Federated States Of Micronesia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MH": "Marshall Islands",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "MP": "Northern Mariana Islands",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PW": "Palau",
+        "PA": "Pennsylvania",
+        "PR": "Puerto Rico",
+        "RI": "Rhode Island",
+        "SC": "South Carolina",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VI": "Virgin Islands",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    }
+
+    let output = ""
+
+    output += `According to the Covid Tracking Project, the state of ${STATES[state]} is reporting the following:`
+    return output
 }
 
 module.exports = {
@@ -139,5 +226,8 @@ module.exports = {
     convertDataToSpeech,
     initialize_data,
     covidDataPipelineV2,
-    covidDataPipelineV2State
+    covidDataPipelineV2State,
+    identifyFields,
+    fetchFilteredData,
+    generateSpeech
 }

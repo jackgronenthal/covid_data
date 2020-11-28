@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const c = require("../../constants")
 
 const url =  ""
 const gen_CTP_url = (state, date) => `https://api.covidtracking.com/v1/states/${state}/${date}.json`
@@ -97,29 +98,25 @@ const hist_state = async state => {
     return { cases: results.positive, deaths: results.death }
 }
 
-const fetchStateFields = async state => {
-    const enabledFields = { 
-        'positive': 0, 
-        'totalTestResults': 5, 
-        'hospitalizedCurrently': 7, 
-        'inIcuCurrently': 8, 
-        'onVentilatorCurrently': 9, 
-        'death': 1, 
-        "positiveIncrease": 3, 
-        "totalTestResultsIncrease": 6,
-        "deathIncrease": 4
-    }
-    const st = STATES[state].toLowerCase()
+const fetchStateData = async state => {
+    const st = state.length === 2 ? state : STATES[state].toLowerCase()
     const url = genCurCtpUrl(st)
     const results = await fetch(url).then(res => res.json()).then(json => json)
+    return results
+}
+
+const fetchStateFields = async state => {
+    let enabledFields = c.ENABLED_FIELDS
+    let results = await fetchStateData(state)
     let fields = []
     for(const key in results) { if(results[key] !== undefined && key in enabledFields) fields = [...fields, { [key]: enabledFields[key] }] }
-    return fields
-} 
+    return { fields, meta: { state: results.state }} 
+}
 
 module.exports = {
     hist: hist_state,
     hist_country,
     fetchStateFields,
+    fetchStateData
 }
 
