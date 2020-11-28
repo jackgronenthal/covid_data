@@ -223,16 +223,21 @@ const generateSpeech = (data, state) => {
     const formatPromptData = d => ({state: d.state, value: d.value, hist_value: d.hist_value })
     const prompts = c.ENABLED_FIELDS_RESPONSE
     console.log(data)
-    if(data.state === undefined) return "It seems like there was a problem with Siri. Until that is fixed, here is some general data: " + prompts["positive"](formatPromptData({state: STATES[state], value: data["positive"]}))
+    //if(data.state === undefined) return "It seems like there was a problem with Siri. Until that is fixed, here is some general data: " + prompts["positive"](formatPromptData({state: STATES[state], value: data["positive"]}))
  
     //TODO We can only handle single fields at the moment
-    let key = data[0].field 
-    if(key) {
-        let prompt = prompts[key]
-        if(prompt) {
-            return prompts[key](formatPromptData({ state: STATES[state], value: data[0].data, hist_value: data[1].data }))
-        }
-    } 
+    try {
+        let key = data[0].field 
+        if(key) {
+            let prompt = prompts[key]
+            if(prompt) {
+                return prompts[key](formatPromptData({ state: STATES[state], value: data[0].data, hist_value: data[1].data }))
+            }
+        } 
+    } catch(err) {
+        console.log(err)
+        return "It seems like there was a problem with Siri. Try the shortcut again without asking Siri."
+    }
     return "It seems like there was a problem with Siri. Until that is fixed, here is some general data: " + prompts["positive"](formatPromptData({state: STATES[state], value: data["positive"]}))
 }
 
